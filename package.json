@@ -13,6 +13,7 @@
     "test": "bash scripts/test"
   },
   "dependencies": {
+    "entoj-system": "git+https://github.com/entoj/entoj-system.git",
     "co": "*",
     "co-fs-extra": "*",
     "es6-template-strings": "^2.0.1",
