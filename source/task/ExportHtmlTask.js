@@ -13,6 +13,7 @@ const Environment = require('entoj-system').nunjucks.Environment;
 const CliLogger = require('entoj-system').cli.CliLogger;
 const assertParameter = require('entoj-system').utils.assert.assertParameter;
 const trimSlashesLeft = require('entoj-system').utils.string.trimSlashesLeft;
+const normalizePathSeparators = require('entoj-system').utils.urls.normalizePathSeparators;
 const templateString = require('es6-template-strings');
 const VinylFile = require('vinyl');
 const co = require('co');
@@ -148,7 +149,7 @@ class ExportHtmlTask extends EntitiesTask
                     if (extend && extend.file)
                     {
                         const extendsPath = extend.file.filename.replace(scope._pathesConfiguration.sites, '');
-                        template+= '{% extends "' + trimSlashesLeft(extendsPath) + '" %}\n';
+                        template+= '{% extends "' + normalizePathSeparators(trimSlashesLeft(extendsPath)) + '" %}\n';
                     }
                     break;
 
@@ -158,7 +159,7 @@ class ExportHtmlTask extends EntitiesTask
                     if (include && include.file)
                     {
                         const includePath = include.file.filename.replace(scope._pathesConfiguration.sites, '');
-                        template+= '{% include "' + trimSlashesLeft(includePath) + '" %}\n';
+                        template+= '{% include "' + normalizePathSeparators(trimSlashesLeft(includePath)) + '" %}\n';
                     }
                     break;
 
