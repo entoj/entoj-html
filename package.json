@@ -1,33 +1,32 @@
 {
-  "name": "entoj-html",
-  "version": "0.1.0",
-  "private": true,
-  "engines": {
-    "node": ">=6.x"
-  },
-  "main": "source/index.js",
-  "scripts": {
-    "coverage": "bash scripts/test --coverage",
-    "coveralls": "bash scripts/coveralls",
-    "lint": "bash scripts/lint",
-    "test": "bash scripts/test"
-  },
-  "dependencies": {
-    "entoj-system": "git+https://github.com/entoj/entoj-system.git",
-    "co": "*",
-    "co-fs-extra": "*",
-    "es6-template-strings": "^2.0.1",
-    "prettydiff": "*",
-    "vinyl": "^2.0.2"
-  },
-  "devDependencies": {
-    "chai": "*",
-    "coveralls": "*",
-    "eslint": "*",
-    "git-changelog": "*",
-    "ink-docstrap": "*",
-    "istanbul": "*",
-    "jsdoc": "*",
-    "mocha": "*"
-  }
+    "name": "entoj-html",
+    "version": "0.1.0",
+    "engines": {
+        "node": ">=6.x"
+    },
+    "main": "source/index.js",
+    "scripts": {
+        "coverage": "bash scripts/test --coverage",
+        "coveralls": "bash scripts/coveralls",
+        "lint": "bash scripts/lint",
+        "test": "bash scripts/test"
+    },
+    "dependencies": {
+        "co": "^4.6.0",
+        "co-fs-extra": "^1.2.1",
+        "entoj-system": "^0.1.0",
+        "es6-template-strings": "^2.0.1",
+        "prettydiff": "^99.0.1",
+        "vinyl": "^2.1.0"
+    },
+    "devDependencies": {
+        "chai": "^4.0.2",
+        "coveralls": "^2.13.1",
+        "eslint": "^4.1.1",
+        "git-changelog": "^1.1.2",
+        "ink-docstrap": "^1.3.0",
+        "istanbul": "^0.4.5",
+        "jsdoc": "^3.4.3",
+        "mocha": "^3.4.2"
+    }
 }
