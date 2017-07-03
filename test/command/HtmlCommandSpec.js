@@ -38,7 +38,13 @@ describe(HtmlCommand.className, function()
                     '!filters':
                     [
                         Filters.LoadFilter,
-                        Filters.ImageUrlFilter,
+                        {
+                            type: Filters.Filter,
+                            options:
+                            {
+                                name: 'imageUrl'
+                            }
+                        },
                         Filters.ModuleClassesFilter,
                         Filters.EmptyFilter,
                         Filters.NotEmptyFilter,
@@ -71,7 +77,13 @@ describe(HtmlCommand.className, function()
                     '!filters':
                     [
                         Filters.LoadFilter,
-                        Filters.ImageUrlFilter,
+                        {
+                            type: Filters.Filter,
+                            options:
+                            {
+                                name: 'imageUrl'
+                            }
+                        },
                         Filters.ModuleClassesFilter,
                         Filters.EmptyFilter,
                         Filters.NotEmptyFilter,
