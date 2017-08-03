@@ -82,7 +82,7 @@ class BeautifyHtmlTask extends TransformingTask
             }
 
             // Start
-            const work = scope.cliLogger.work('Processing file <' + file.path + '>');
+            const work = scope.cliLogger.work('Beautifiying file <' + file.path + '>');
 
             let resultFile;
             try
