@@ -50,7 +50,7 @@ describe(ExportHtmlTask.className, function()
                     type: require('entoj-system').nunjucks.Environment,
                     options:
                     {
-                        basePath: '${sites}',
+                        templatePaths: '${sites}',
                     },
                     '!filters':
                     [
