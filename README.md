@@ -3,7 +3,7 @@
 [![Windows Build][appveyor-image]][appveyor-url]
 [![Test Coverage][coveralls-image]][coveralls-url]
 
-# entoj sass integration
+# entoj html support
 
 ## Running tests
 
