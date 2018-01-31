@@ -181,10 +181,20 @@ class ExportHtmlTask extends EntitiesTask
 
             // Compile
             const work = scope._cliLogger.work('Rendering template to html for <' + entity.idString + '> as <' + filename + '>');
-            const data = { site: entity.site, entity: entity };
-            scope._nunjucks.addGlobal('site', data.site);
+            const data =
+            {
+                site: entity.site,
+                entity: entity
+            };
+            const location =
+            {
+                site: data.site,
+                entity: data.entity,
+                customPath: ''
+            };
+            scope._nunjucks.addGlobal('global', {});
+            scope._nunjucks.addGlobal('location', location);
             scope._nunjucks.addGlobal('request', false);
-
             const contents = scope._nunjucks.renderString(template, data);
             scope._cliLogger.end(work);
 
