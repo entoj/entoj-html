@@ -29,7 +29,7 @@ class HtmlCommand extends Command
         super(context);
 
         // Assign options
-        this.name = 'html';
+        this.name = ['html', 'export'];
     }
 
 
@@ -43,7 +43,7 @@ class HtmlCommand extends Command
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      */
     static get className()
     {
@@ -52,7 +52,7 @@ class HtmlCommand extends Command
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      */
     get help()
     {
@@ -63,7 +63,7 @@ class HtmlCommand extends Command
             actions:
             [
                 {
-                    name: 'export',
+                    name: 'html',
                     description: 'Exports templates as html',
                     options:
                     [
@@ -91,7 +91,7 @@ class HtmlCommand extends Command
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      * @returns {Promise<Server>}
      */
     export(parameters)
@@ -108,7 +108,7 @@ class HtmlCommand extends Command
             const options =
             {
                 query: parameters && parameters._ && parameters._[0] || '*',
-                writePath: yield pathesConfiguration.resolve((parameters && parameters.destination) || htmlConfiguration.exportPath)
+                writePath: yield pathesConfiguration.resolve((parameters && parameters.destination) || htmlConfiguration.exportPath),
             };
             let task = scope.context.di.create(ExportHtmlTask, mapping);
             if (buildConfiguration.get('html.beautify', false) === true)
@@ -123,11 +123,15 @@ class HtmlCommand extends Command
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      */
     dispatch(action, parameters)
     {
-        return this.export(parameters);
+        if (action == 'html' || action == 'export')
+        {
+            return this.export(parameters);
+        }
+        return Promise.resolve(false);
     }
 }
 

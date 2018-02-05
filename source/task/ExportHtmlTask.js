@@ -75,6 +75,15 @@ class ExportHtmlTask extends EntitiesTask
 
 
     /**
+     * @inheritDoc
+     */
+    get nunjucks()
+    {
+        return this._nunjucks;
+    }
+
+
+    /**
      * @inheritDocs
      */
     prepareParameters(buildConfiguration, parameters)
@@ -82,7 +91,12 @@ class ExportHtmlTask extends EntitiesTask
         const promise = super.prepareParameters(buildConfiguration, parameters)
             .then((params) =>
             {
-                params.filepathTemplate = typeof params.filepathTemplate === 'string' ? params.filepathTemplate : '${entity.pathString}';
+                params.filepathTemplate = typeof params.filepathTemplate === 'string'
+                    ? params.filepathTemplate
+                    : '${entity.pathString}';
+                params.filterCallbacks = params.filterCallbacks
+                    ? params.filterCallbacks
+                    : {};
                 return params;
             });
         return promise;
@@ -180,7 +194,7 @@ class ExportHtmlTask extends EntitiesTask
             }
 
             // Compile
-            const work = scope._cliLogger.work('Rendering template to html for <' + entity.idString + '> as <' + filename + '>');
+            const work = scope.cliLogger.work('Rendering template to html for <' + entity.idString + '> as <' + filename + '>');
             const data =
             {
                 site: entity.site,
@@ -192,11 +206,16 @@ class ExportHtmlTask extends EntitiesTask
                 entity: data.entity,
                 customPath: ''
             };
-            scope._nunjucks.addGlobal('global', {});
-            scope._nunjucks.addGlobal('location', location);
-            scope._nunjucks.addGlobal('request', false);
+            scope.nunjucks.addGlobal('global', {});
+            scope.nunjucks.addGlobal('location', location);
+            scope.nunjucks.addGlobal('request', false);
+            scope.nunjucks.clearFilterCallbacks();
+            for (const filterName in params.filterCallbacks)
+            {
+                scope.nunjucks.addFilterCallback(filterName, params.filterCallbacks[filterName]);
+            }
             const contents = scope._nunjucks.renderString(template, data);
-            scope._cliLogger.end(work);
+            scope.cliLogger.end(work);
 
             // Done
             const file = new VinylFile(
