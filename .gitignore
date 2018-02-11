@@ -5,3 +5,4 @@
 /npm-debug.log
 /test/__fixtures__/**/*
 /package-lock.json
+package-lock.*
