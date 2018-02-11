@@ -97,6 +97,9 @@ class ExportHtmlTask extends EntitiesTask
                 params.filterCallbacks = params.filterCallbacks
                     ? params.filterCallbacks
                     : {};
+                params.exportName = params.exportName
+                    ? params.exportName
+                    : 'html';                    
                 return params;
             });
         return promise;
@@ -245,8 +248,9 @@ class ExportHtmlTask extends EntitiesTask
         const promise = co(function *()
         {
             // Render each configured release
+            const params = yield scope.prepareParameters(buildConfiguration, parameters);
             const result = [];
-            const settings = entity.properties.getByPath('export.html', []);
+            const settings = entity.properties.getByPath('export.' + params.exportName, []);
             for (const setting of settings)
             {
                 // Render entity
