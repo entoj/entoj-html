@@ -124,7 +124,7 @@ class ExportHtmlTask extends EntitiesTask
             const settings = entitySettings || {};
             const params = yield scope.prepareParameters(buildConfiguration, parameters);
             const macroName = settings.macro || entity.idString.lodasherize();
-            const macroParameters = settings.parameters || {};
+            const macroParameters = settings.parameters || settings.arguments || {};
             const filepath = templateString(params.filepathTemplate,
                 {
                     entity: entity,
