@@ -99,7 +99,7 @@ class ExportHtmlTask extends EntitiesTask
                     : {};
                 params.exportName = params.exportName
                     ? params.exportName
-                    : 'html';                    
+                    : 'html';
                 return params;
             });
         return promise;
@@ -133,6 +133,7 @@ class ExportHtmlTask extends EntitiesTask
                     entityCategory: entity.id.category
                 });
             const entityPath = entity.pathString + '/' + entity.idString;
+            const type = settings.type || entity.id.category.type;
 
             // Generate filename
             let filename;
@@ -159,7 +160,7 @@ class ExportHtmlTask extends EntitiesTask
 
             // Create template
             let template = '';
-            switch(settings.type)
+            switch(type)
             {
                 case 'template':
                     const extend = yield scope._urlsConfiguration.matchEntityFile(entityPath + '.j2');
@@ -212,6 +213,7 @@ class ExportHtmlTask extends EntitiesTask
             scope.nunjucks.addGlobal('global', {});
             scope.nunjucks.addGlobal('location', location);
             scope.nunjucks.addGlobal('request', false);
+            scope.nunjucks.addGlobal('__configuration__', entitySettings.configuration || {});
             scope.nunjucks.clearFilterCallbacks();
             for (const filterName in params.filterCallbacks)
             {

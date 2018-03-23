@@ -14,7 +14,7 @@ module.exports = {
         "no-var": 2,
         "no-useless-constructor": 2,
         "no-case-declarations": 0,
-        "complexity": ["error", { "max": 20 }]
+        "complexity": ["error", { "max": 30 }]
     },
     "env": {
         "es6": true,
