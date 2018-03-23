@@ -213,7 +213,7 @@ class ExportHtmlTask extends EntitiesTask
             scope.nunjucks.addGlobal('global', {});
             scope.nunjucks.addGlobal('location', location);
             scope.nunjucks.addGlobal('request', false);
-            scope.nunjucks.addGlobal('__configuration__', entitySettings.configuration || {});
+            scope.nunjucks.addGlobal('__configuration__', settings.configuration || {});
             scope.nunjucks.clearFilterCallbacks();
             for (const filterName in params.filterCallbacks)
             {
