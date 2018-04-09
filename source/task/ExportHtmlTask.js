@@ -4,6 +4,7 @@
  * Requirements
  * @ignore
  */
+const BaseMap = require('entoj-system').base.BaseMap;
 const EntitiesTask = require('entoj-system').task.EntitiesTask;
 const ErrorHandler = require('entoj-system').error.ErrorHandler;
 const GlobalRepository = require('entoj-system').model.GlobalRepository;
@@ -213,7 +214,7 @@ class ExportHtmlTask extends EntitiesTask
             scope.nunjucks.addGlobal('global', {});
             scope.nunjucks.addGlobal('location', location);
             scope.nunjucks.addGlobal('request', false);
-            scope.nunjucks.addGlobal('__configuration__', settings.configuration || {});
+            scope.nunjucks.addGlobal('__configuration__', new BaseMap(settings.configuration || {}));
             scope.nunjucks.clearFilterCallbacks();
             for (const filterName in params.filterCallbacks)
             {
