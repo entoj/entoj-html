@@ -15,6 +15,7 @@ const CliLogger = require('entoj-system').cli.CliLogger;
 const assertParameter = require('entoj-system').utils.assert.assertParameter;
 const trimSlashesLeft = require('entoj-system').utils.string.trimSlashesLeft;
 const normalizePathSeparators = require('entoj-system').utils.urls.normalizePathSeparators;
+const HtmlModuleConfiguration = require('../configuration/HtmlModuleConfiguration.js').HtmlModuleConfiguration;
 const templateString = require('es6-template-strings');
 const VinylFile = require('vinyl');
 const co = require('co');
@@ -38,18 +39,20 @@ class ExportHtmlTask extends EntitiesTask
     /**
      *
      */
-    constructor(cliLogger, globalRepository, pathesConfiguration, urlsConfiguration, nunjucks)
+    constructor(cliLogger, globalRepository, pathesConfiguration, urlsConfiguration, htmlModuleConfiguration, nunjucks)
     {
         super(cliLogger, globalRepository);
 
         //Check params
         assertParameter(this, 'pathesConfiguration', pathesConfiguration, true, PathesConfiguration);
         assertParameter(this, 'urlsConfiguration', urlsConfiguration, true, UrlsConfiguration);
+        assertParameter(this, 'htmlModuleConfiguration', htmlModuleConfiguration, true, HtmlModuleConfiguration);
         assertParameter(this, 'nunjucks', nunjucks, true, Environment);
 
         // Assign options
         this._pathesConfiguration = pathesConfiguration;
         this._urlsConfiguration = urlsConfiguration;
+        this._htmlModuleConfiguration = htmlModuleConfiguration;
         this._nunjucks = nunjucks;
 
         // Configure nunjucks path
@@ -58,16 +61,16 @@ class ExportHtmlTask extends EntitiesTask
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      */
     static get injections()
     {
-        return { 'parameters': [CliLogger, GlobalRepository, PathesConfiguration, UrlsConfiguration, Environment] };
+        return { 'parameters': [CliLogger, GlobalRepository, PathesConfiguration, UrlsConfiguration, HtmlModuleConfiguration, Environment] };
     }
 
 
     /**
-     * @inheritDocs
+     * @inheritDoc
      */
     static get className()
     {
@@ -85,6 +88,32 @@ class ExportHtmlTask extends EntitiesTask
 
 
     /**
+     * @inheritDoc
+     */
+    get pathesConfiguration()
+    {
+        return this._pathesConfiguration;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    get urlsConfiguration()
+    {
+        return this._urlsConfiguration;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    get htmlModuleConfiguration()
+    {
+        return this._htmlModuleConfiguration;
+    }
+
+    /**
      * @inheritDocs
      */
     prepareParameters(buildConfiguration, parameters)
@@ -95,6 +124,9 @@ class ExportHtmlTask extends EntitiesTask
                 params.filepathTemplate = typeof params.filepathTemplate === 'string'
                     ? params.filepathTemplate
                     : '${entity.pathString}';
+                params.filenameTemplate = typeof params.filenameTemplate === 'string'
+                    ? params.filenameTemplate
+                    : '${entity.idString}';
                 params.filterCallbacks = params.filterCallbacks
                     ? params.filterCallbacks
                     : {};
@@ -110,14 +142,8 @@ class ExportHtmlTask extends EntitiesTask
     /**
      * @returns {Promise<VinylFile>}
      */
-    renderEntity(entity, entitySettings, buildConfiguration, parameters)
+    renderFile(filename, entity, entitySettings, buildConfiguration, parameters, templateConfiguration)
     {
-        if (!entity)
-        {
-            this.logger.warn(this.className + '::renderEntity - No entity given');
-            return Promise.resolve(false);
-        }
-
         const scope = this;
         const promise = co(function *()
         {
@@ -126,58 +152,28 @@ class ExportHtmlTask extends EntitiesTask
             const params = yield scope.prepareParameters(buildConfiguration, parameters);
             const macroName = settings.macro || entity.idString.lodasherize();
             const macroParameters = settings.parameters || settings.arguments || {};
-            const filepath = templateString(params.filepathTemplate,
-                {
-                    entity: entity,
-                    entityId: entity.id,
-                    site: entity.id.site,
-                    entityCategory: entity.id.category
-                });
             const entityPath = entity.pathString + '/' + entity.idString;
             const type = settings.type || entity.id.category.type;
-
-            // Generate filename
-            let filename;
-            if (settings.filename)
-            {
-                filename = settings.filename;
-
-                // Add entity path if necessary
-                if (filename.indexOf('/') == '-1' && filename.indexOf('\\') == '-1')
-                {
-                    filename = trimSlashesLeft(path.join(filepath, filename));
-                }
-
-                // Add .html if necessary
-                if (!filename.endsWith('.html'))
-                {
-                    filename+= '.html';
-                }
-            }
-            else
-            {
-                filename = trimSlashesLeft(path.join(filepath, entity.idString + '.html'));
-            }
 
             // Create template
             let template = '';
             switch(type)
             {
                 case 'template':
-                    const extend = yield scope._urlsConfiguration.matchEntityFile(entityPath + '.j2');
+                    const extend = yield scope.urlsConfiguration.matchEntityFile(entityPath + '.j2');
                     if (extend && extend.file)
                     {
-                        const extendsPath = extend.file.filename.replace(scope._pathesConfiguration.sites, '');
+                        const extendsPath = extend.file.filename.replace(scope.pathesConfiguration.sites, '');
                         template+= '{% extends "' + normalizePathSeparators(trimSlashesLeft(extendsPath)) + '" %}\n';
                     }
                     break;
 
                 case 'page':
                 case 'include':
-                    const include = yield scope._urlsConfiguration.matchEntityFile(entityPath + '.j2');
+                    const include = yield scope.urlsConfiguration.matchEntityFile(entityPath + '.j2');
                     if (include && include.file)
                     {
-                        const includePath = include.file.filename.replace(scope._pathesConfiguration.sites, '');
+                        const includePath = include.file.filename.replace(scope.pathesConfiguration.sites, '');
                         template+= '{% include "' + normalizePathSeparators(trimSlashesLeft(includePath)) + '" %}\n';
                     }
                     break;
@@ -214,7 +210,7 @@ class ExportHtmlTask extends EntitiesTask
             scope.nunjucks.addGlobal('global', {});
             scope.nunjucks.addGlobal('location', location);
             scope.nunjucks.addGlobal('request', false);
-            scope.nunjucks.addGlobal('__configuration__', new BaseMap(settings.configuration || {}));
+            scope.nunjucks.addGlobal('__configuration__', new BaseMap(templateConfiguration));
             scope.nunjucks.clearFilterCallbacks();
             for (const filterName in params.filterCallbacks)
             {
@@ -230,6 +226,71 @@ class ExportHtmlTask extends EntitiesTask
                     contents: new Buffer(contents)
                 });
             return file;
+        }).catch(ErrorHandler.handler(scope));
+        return promise;
+    }
+
+
+    /**
+     * @returns {Promise<VinylFile>}
+     */
+    renderEntity(entity, entitySettings, buildConfiguration, parameters)
+    {
+        if (!entity)
+        {
+            this.logger.warn(this.className + '::renderEntity - No entity given');
+            return Promise.resolve(false);
+        }
+
+        const scope = this;
+        const promise = co(function *()
+        {
+            // Prepare
+            const result = [];
+            const settings = entitySettings || {};
+            const params = yield scope.prepareParameters(buildConfiguration, parameters);
+
+            // Render each language
+            for (const language of scope.htmlModuleConfiguration.languages)
+            {
+                const locale = language;
+                const country = locale.split('_').pop();
+                const templateConfiguration = settings.configuration || {};
+                templateConfiguration.language = locale;
+                const filepath = templateString(params.filepathTemplate,
+                    {
+                        entity: entity,
+                        entityId: entity.id,
+                        site: entity.id.site,
+                        entityCategory: entity.id.category,
+                        locale,
+                        language: locale,
+                        country
+                    });
+                let filename = templateString(settings.filename || params.filenameTemplate,
+                    {
+                        entity: entity,
+                        entityId: entity.id,
+                        site: entity.id.site,
+                        entityCategory: entity.id.category,
+                        locale,
+                        language: locale,
+                        country
+                    });
+                // Add entity path if necessary
+                if (filename.indexOf('/') == '-1' && filename.indexOf('\\') == '-1')
+                {
+                    filename = trimSlashesLeft(path.join(filepath, filename));
+                }
+                // Add .html if necessary
+                if (!filename.endsWith('.html'))
+                {
+                    filename+= '.html';
+                }
+                result.push(yield scope.renderFile(filename, entity, entitySettings, buildConfiguration, parameters, templateConfiguration));
+            }
+
+            return result;
         }).catch(ErrorHandler.handler(scope));
         return promise;
     }
@@ -257,10 +318,10 @@ class ExportHtmlTask extends EntitiesTask
             for (const setting of settings)
             {
                 // Render entity
-                const file = yield scope.renderEntity(entity, setting, buildConfiguration, parameters);
-                if (file)
+                const files = yield scope.renderEntity(entity, setting, buildConfiguration, parameters);
+                if (files)
                 {
-                    result.push(file);
+                    result.push(...files);
                 }
             }
 

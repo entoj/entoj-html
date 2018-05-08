@@ -3,5 +3,5 @@
  */
 module.exports =
 {
-    HtmlConfiguration: require('./HtmlConfiguration.js').HtmlConfiguration
+    HtmlModuleConfiguration: require('./HtmlModuleConfiguration.js').HtmlModuleConfiguration
 };

@@ -5,6 +5,7 @@
  * @ignore
  */
 const Base = require('entoj-system').Base;
+const SystemModuleConfiguration = require('entoj-system').configuration.SystemModuleConfiguration;
 const GlobalConfiguration = require('entoj-system').model.configuration.GlobalConfiguration;
 const assertParameter = require('entoj-system').utils.assert.assertParameter;
 
@@ -12,19 +13,21 @@ const assertParameter = require('entoj-system').utils.assert.assertParameter;
 /**
  * @memberOf configuration
  */
-class HtmlConfiguration extends Base
+class HtmlModuleConfiguration extends Base
 {
     /**
      * @param  {model.configuration.GlobalConfiguration} globalConfiguration
      */
-    constructor(globalConfiguration)
+    constructor(systemModuleConfiguration, globalConfiguration)
     {
         super();
 
         //Check params
         assertParameter(this, 'globalConfiguration', globalConfiguration, true, GlobalConfiguration);
+        assertParameter(this, 'systemModuleConfiguration', systemModuleConfiguration, true, SystemModuleConfiguration);
 
         // Create configuration
+        this._systemModuleConfiguration = systemModuleConfiguration;
         this._exportPath = globalConfiguration.get('html.exportPath', '${cache}/html/export');
     }
 
@@ -34,7 +37,7 @@ class HtmlConfiguration extends Base
      */
     static get injections()
     {
-        return { 'parameters': [GlobalConfiguration] };
+        return { 'parameters': [SystemModuleConfiguration, GlobalConfiguration] };
     }
 
 
@@ -43,7 +46,7 @@ class HtmlConfiguration extends Base
      */
     static get className()
     {
-        return 'configuration/HtmlConfiguration';
+        return 'configuration/HtmlModuleConfiguration';
     }
 
 
@@ -56,6 +59,24 @@ class HtmlConfiguration extends Base
     {
         return this._exportPath;
     }
+
+
+    /**
+     * @type {Array}
+     */
+    get languages()
+    {
+        return this._systemModuleConfiguration.languages;
+    }
+
+
+    /**
+     * @type {String}
+     */
+    get language()
+    {
+        return this._systemModuleConfiguration.language;
+    }
 }
 
 
@@ -63,4 +84,4 @@ class HtmlConfiguration extends Base
  * Exports
  * @ignore
  */
-module.exports.HtmlConfiguration = HtmlConfiguration;
+module.exports.HtmlModuleConfiguration = HtmlModuleConfiguration;

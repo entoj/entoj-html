@@ -4,6 +4,7 @@
  * Requirements
  */
 const ExportHtmlTask = require(HTML_SOURCE + '/task/ExportHtmlTask.js').ExportHtmlTask;
+const HtmlModuleConfiguration = require(HTML_SOURCE + '/configuration/HtmlModuleConfiguration.js').HtmlModuleConfiguration;
 const Environment = require('entoj-system').nunjucks.Environment;
 const Filters = require('entoj-system').nunjucks.filter;
 const projectFixture = require('entoj-system/test').fixture.project;
@@ -29,6 +30,7 @@ describe(ExportHtmlTask.className, function()
     function prepareParameters(parameters)
     {
         parameters.unshift(global.fixtures.nunjucks);
+        parameters.unshift(new HtmlModuleConfiguration(global.fixtures.systemConfiguration, global.fixtures.globalConfiguration));
         parameters.unshift(global.fixtures.urlsConfiguration);
         parameters.unshift(global.fixtures.pathesConfiguration);
         parameters.unshift(global.fixtures.globalRepository);
@@ -102,7 +104,8 @@ describe(ExportHtmlTask.className, function()
             {
                 const testee = createTestee();
                 const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
-                const file = yield testee.renderEntity(entities[0]);
+                const files = yield testee.renderEntity(entities[0]);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('<div class="m-teaser');
             });
@@ -119,7 +122,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     macro: 'm_teaser_hero'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('m-teaser--hero');
             });
@@ -139,7 +143,8 @@ describe(ExportHtmlTask.className, function()
                         classes: 'm-foo--teaser'
                     }
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('m-foo--teaser');
             });
@@ -156,7 +161,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     macro: 'e_image'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('class="e-image');
             });
@@ -173,7 +179,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     type: 'page'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('All Contents');
             });
@@ -190,7 +197,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     type: 'page'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('All Contents');
             });
@@ -207,7 +215,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     type: 'template'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('t-bare__viewport');
             });
@@ -224,7 +233,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     type: 'template'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file).to.be.instanceof(VinylFile);
                 expect(file.contents.toString()).to.contain('t-bare__viewport');
             });
@@ -237,7 +247,8 @@ describe(ExportHtmlTask.className, function()
             {
                 const testee = createTestee();
                 const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
-                const file = yield testee.renderEntity(entities[0]);
+                const files = yield testee.renderEntity(entities[0]);
+                const file = files[0];
                 expect(file.path).to.be.equal(pathes.normalizePathSeparators('base/modules/m-teaser/m-teaser.html'));
             });
             return promise;
@@ -253,7 +264,8 @@ describe(ExportHtmlTask.className, function()
                 {
                     filename: 'foo/bars.html'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file.path).to.be.equal(pathes.normalizePathSeparators('foo/bars.html'));
             });
             return promise;
@@ -269,8 +281,45 @@ describe(ExportHtmlTask.className, function()
                 {
                     filename: 'bars'
                 };
-                const file = yield testee.renderEntity(entities[0], settings);
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
                 expect(file.path).to.be.equal(pathes.normalizePathSeparators('base/modules/m-teaser/bars.html'));
+            });
+            return promise;
+        });
+
+        it('should allow to specify a filename with variables via settings', function()
+        {
+            const promise = co(function *()
+            {
+                const testee = createTestee();
+                const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
+                const settings =
+                {
+                    filename: '${entity.idString}-foo'
+                };
+                const files = yield testee.renderEntity(entities[0], settings);
+                const file = files[0];
+                expect(file.path).to.be.equal(pathes.normalizePathSeparators('base/modules/m-teaser/m-teaser-foo.html'));
+            });
+            return promise;
+        });
+
+        it('should render each entity for each configured language', function()
+        {
+            const promise = co(function *()
+            {
+                const testee = createTestee();
+                global.fixtures.systemConfiguration._languages = ['en_GB', 'de_DE'];
+                const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
+                const settings =
+                {
+                    filename: '${entity.idString}-${language}'
+                };
+                const files = yield testee.renderEntity(entities[0], settings);
+                expect(files).to.have.length(2);
+                expect(files[0].path).to.be.equal(pathes.normalizePathSeparators('base/modules/m-teaser/m-teaser-en_GB.html'));
+                expect(files[1].path).to.be.equal(pathes.normalizePathSeparators('base/modules/m-teaser/m-teaser-de_DE.html'));
             });
             return promise;
         });

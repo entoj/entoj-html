@@ -7,7 +7,7 @@
 const Command = require('entoj-system').command.Command;
 const CliLogger = require('entoj-system').cli.CliLogger;
 const Context = require('entoj-system').application.Context;
-const HtmlConfiguration = require('../configuration/HtmlConfiguration.js').HtmlConfiguration;
+const HtmlModuleConfiguration = require('../configuration/HtmlModuleConfiguration.js').HtmlModuleConfiguration;
 const ExportHtmlTask = require('../task/ExportHtmlTask.js').ExportHtmlTask;
 const BeautifyHtmlTask = require('../task/BeautifyHtmlTask.js').BeautifyHtmlTask;
 const WriteFilesTask = require('entoj-system').task.WriteFilesTask;
@@ -103,7 +103,7 @@ class HtmlCommand extends Command
             const mapping = new Map();
             mapping.set(CliLogger, logger);
             const pathesConfiguration = scope.context.di.create(PathesConfiguration);
-            const htmlConfiguration = scope.context.di.create(HtmlConfiguration);
+            const htmlConfiguration = scope.context.di.create(HtmlModuleConfiguration);
             const buildConfiguration = scope.context.di.create(BuildConfiguration);
             const options =
             {
