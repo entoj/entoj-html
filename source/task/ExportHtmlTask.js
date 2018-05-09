@@ -16,10 +16,8 @@ const assertParameter = require('entoj-system').utils.assert.assertParameter;
 const trimSlashesLeft = require('entoj-system').utils.string.trimSlashesLeft;
 const normalizePathSeparators = require('entoj-system').utils.urls.normalizePathSeparators;
 const HtmlModuleConfiguration = require('../configuration/HtmlModuleConfiguration.js').HtmlModuleConfiguration;
-const templateString = require('es6-template-strings');
 const VinylFile = require('vinyl');
 const co = require('co');
-const path = require('path');
 
 
 /**
