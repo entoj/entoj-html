@@ -121,12 +121,6 @@ class ExportHtmlTask extends EntitiesTask
         const promise = super.prepareParameters(buildConfiguration, parameters)
             .then((params) =>
             {
-                params.filepathTemplate = typeof params.filepathTemplate === 'string'
-                    ? params.filepathTemplate
-                    : '${entity.pathString}';
-                params.filenameTemplate = typeof params.filenameTemplate === 'string'
-                    ? params.filenameTemplate
-                    : '${entity.idString}';
                 params.filterCallbacks = params.filterCallbacks
                     ? params.filterCallbacks
                     : {};
@@ -248,45 +242,13 @@ class ExportHtmlTask extends EntitiesTask
             // Prepare
             const result = [];
             const settings = entitySettings || {};
-            const params = yield scope.prepareParameters(buildConfiguration, parameters);
 
             // Render each language
             for (const language of scope.htmlModuleConfiguration.languages)
             {
-                const locale = language;
-                const country = locale.split('_').pop();
+                const filename = scope.htmlModuleConfiguration.getFilenameForEntity(entity, language, settings);
                 const templateConfiguration = settings.configuration || {};
-                templateConfiguration.language = locale;
-                const filepath = templateString(params.filepathTemplate,
-                    {
-                        entity: entity,
-                        entityId: entity.id,
-                        site: entity.id.site,
-                        entityCategory: entity.id.category,
-                        locale,
-                        language: locale,
-                        country
-                    });
-                let filename = templateString(settings.filename || params.filenameTemplate,
-                    {
-                        entity: entity,
-                        entityId: entity.id,
-                        site: entity.id.site,
-                        entityCategory: entity.id.category,
-                        locale,
-                        language: locale,
-                        country
-                    });
-                // Add entity path if necessary
-                if (filename.indexOf('/') == '-1' && filename.indexOf('\\') == '-1')
-                {
-                    filename = trimSlashesLeft(path.join(filepath, filename));
-                }
-                // Add .html if necessary
-                if (!filename.endsWith('.html'))
-                {
-                    filename+= '.html';
-                }
+                templateConfiguration.language = language;
                 result.push(yield scope.renderFile(filename, entity, entitySettings, buildConfiguration, parameters, templateConfiguration));
             }
 

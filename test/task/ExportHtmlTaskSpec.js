@@ -30,7 +30,7 @@ describe(ExportHtmlTask.className, function()
     function prepareParameters(parameters)
     {
         parameters.unshift(global.fixtures.nunjucks);
-        parameters.unshift(new HtmlModuleConfiguration(global.fixtures.systemConfiguration, global.fixtures.globalConfiguration));
+        parameters.unshift(new HtmlModuleConfiguration(global.fixtures.systemConfiguration, global.fixtures.globalConfiguration, global.fixtures.buildConfiguration));
         parameters.unshift(global.fixtures.urlsConfiguration);
         parameters.unshift(global.fixtures.pathesConfiguration);
         parameters.unshift(global.fixtures.globalRepository);
@@ -323,6 +323,40 @@ describe(ExportHtmlTask.className, function()
             });
             return promise;
         });
+
+        it('should allow to configure the file path', function()
+        {
+            const promise = co(function *()
+            {
+                const testee = createTestee();
+                const settings =
+                {
+                    filePathTemplate: 'foo'
+                };
+                const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
+                const files = yield testee.renderEntity(entities[0], settings);
+                expect(files).to.have.length(1);
+                expect(files[0].path).to.be.equal(pathes.normalizePathSeparators('foo/m-teaser.html'));
+            });
+            return promise;
+        });
+
+        it('should allow to remove the file path', function()
+        {
+            const promise = co(function *()
+            {
+                const testee = createTestee();
+                const settings =
+                {
+                    filePathTemplate: ''
+                };
+                const entities = yield global.fixtures.globalRepository.resolveEntities('base/modules/m-teaser');
+                const files = yield testee.renderEntity(entities[0], settings);
+                expect(files).to.have.length(1);
+                expect(files[0].path).to.be.equal(pathes.normalizePathSeparators('m-teaser.html'));
+            });
+            return promise;
+        });
     });
 
 
@@ -343,44 +377,6 @@ describe(ExportHtmlTask.className, function()
                             pathes.normalizePathSeparators('extended/modules/m-teaser/m-teaser.html'),
                             pathes.normalizePathSeparators('base/elements/e-image/e-image.html'),
                             pathes.normalizePathSeparators('extended/elements/e-image/e-image.html')
-                        ]);
-                }
-            });
-            return promise;
-        });
-
-        it('should allow to configure the file path', function()
-        {
-            const promise = co(function *()
-            {
-                const testee = createTestee();
-                const files = yield taskSpec.readStream(testee.stream(undefined, undefined, { filepathTemplate: 'foo' }));
-                expect(files).to.have.length(4);
-                for (const file of files)
-                {
-                    expect(file.path).to.be.oneOf(
-                        [
-                            pathes.normalizePathSeparators('foo/m-teaser.html'),
-                            pathes.normalizePathSeparators('foo/e-image.html')
-                        ]);
-                }
-            });
-            return promise;
-        });
-
-        it('should allow to remove the file path', function()
-        {
-            const promise = co(function *()
-            {
-                const testee = createTestee();
-                const files = yield taskSpec.readStream(testee.stream(undefined, undefined, { filepathTemplate: '' }));
-                expect(files).to.have.length(4);
-                for (const file of files)
-                {
-                    expect(file.path).to.be.oneOf(
-                        [
-                            pathes.normalizePathSeparators('m-teaser.html'),
-                            pathes.normalizePathSeparators('e-image.html')
                         ]);
                 }
             });
