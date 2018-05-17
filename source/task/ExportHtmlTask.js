@@ -122,6 +122,7 @@ class ExportHtmlTask extends EntitiesTask
                 params.filterCallbacks = params.filterCallbacks
                     ? params.filterCallbacks
                     : {};
+                params.filenameCallback = params.filenameCallback || false;
                 params.exportName = params.exportName
                     ? params.exportName
                     : 'html';
@@ -207,6 +208,10 @@ class ExportHtmlTask extends EntitiesTask
             for (const filterName in params.filterCallbacks)
             {
                 scope.nunjucks.addFilterCallback(filterName, params.filterCallbacks[filterName]);
+            }
+            if (params.filenameCallback)
+            {
+                params.filenameCallback(filename);
             }
             const contents = scope._nunjucks.renderString(template, data);
             scope.cliLogger.end(work);

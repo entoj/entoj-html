@@ -116,8 +116,8 @@ class HtmlModuleConfiguration extends Base
             : entity.properties.getByPath('export.static', [{}]).pop();
         settings = settings || {};
         const country = language
-            ? this.language.split('_').pop()
-            : language.split('_').pop();
+            ? language.split('_').pop()
+            : this.language.split('_').pop();
         const filePathTemplate = typeof entitySettings.filePathTemplate != 'string'
             ? this.filePathTemplate
             : settings.filePathTemplate;
